@@ -3,7 +3,7 @@ package tables
 import scala.quoted.*
 
 abstract class SqlParse[T, R]:
-    private[tables] def processAst(ast: ClasuseAst[T]): R
+    private[tables] def processAst(ast: ClauseAst[T]): R
     inline def apply(inline condition: T => Boolean): R = ${parseImpl[T, R]('this, 'condition)}
 
 
@@ -38,4 +38,4 @@ def parseImpl[T: Type, R: Type](self: Expr[SqlParse[T, R]], condition: Expr[T =>
             case _ => report.errorAndAbort("Expected a column reference", a.fun.pos)
 
     processFunCall(term)
-    '{$self.processAst(ClasuseAst.Fun("filter", List(ClasuseAst.Column(0, "a"), ClasuseAst.Column(0, "b"))))}
+    '{$self.processAst(ClauseAst.Fun("filter", List(ClauseAst.Column(0, "a"), ClauseAst.Column(0, "b"))))}

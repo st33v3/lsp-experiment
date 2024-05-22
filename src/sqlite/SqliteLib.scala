@@ -10,6 +10,9 @@ import scala.compiletime.erasedValue
 import java.lang.foreign.MemorySegment
 import java.lang.invoke.MethodHandle
 
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
 opaque type SqliteOpen = Int
 object SqliteOpen:
     extension (code: SqliteOpen)
@@ -38,6 +41,20 @@ object SqliteOpen:
     val NOFOLLOW: SqliteOpen =         0x01000000  /* Ok for sqlite3_open_v2() */
     val EXRESCODE: SqliteOpen =        0x02000000  /* Extended result codes */
 
+object SqliteResult:
+    val SQLITE_OK = 0
+    val SQLITE_ROW = 100
+    val SQLITE_DONE = 101
+    val SQLITE_ERROR = 1
+    val SQLITE_BUSY = 5
+
+object SqliteColumnType:
+    val SQLITE_INTEGER = 1
+    val SQLITE_FLOAT = 2
+    val SQLITE_TEXT = 3
+    val SQLITE_BLOB = 4
+    val SQLITE_NULL = 5    
+
 object SqliteLib:
     private val arena = Arena.ofAuto().nn
     private val linker = Linker.nativeLinker().nn
@@ -52,7 +69,7 @@ object SqliteLib:
         case _: (t *: ts) => inline erasedValue[t] match 
             case _: Int => ValueLayout.JAVA_INT.nn :: layout[ts]
             case _: Long => ValueLayout.JAVA_LONG.nn :: layout[ts]
-            case _: Long => ValueLayout.JAVA_DOUBLE.nn :: layout[ts]
+            case _: Double => ValueLayout.JAVA_DOUBLE.nn :: layout[ts]
             case _: MemorySegment => ValueLayout.ADDRESS.nn :: layout[ts]
 
     private inline def make[T <: Tuple](name: String): MethodHandle = 
@@ -84,6 +101,18 @@ object SqliteLib:
     /* int sqlite3_bind_null(sqlite3_stmt*, int); */
     val bind_null = make[(Int, MemorySegment, Int)]("sqlite3_bind_null")
 
+    /* int sqlite3_bind_double(sqlite3_stmt*, int, double); */
+    val bind_double = make[(Int, MemorySegment, Int, Double)]("sqlite3_bind_double")
+
+    /* int sqlite3_bind_int(sqlite3_stmt*, int, int); */
+    val bind_int = make[(Int, MemorySegment, Int, Int)]("sqlite3_bind_int")
+
+    /* int sqlite3_bind_int64(sqlite3_stmt*, int, sqlite3_int64); */
+    val bind_int64 = make[(Int, MemorySegment, Int, Long)]("sqlite3_bind_int64")
+
+    /* int sqlite3_bind_text(sqlite3_stmt*,int,const char*,int,void(*)(void*)); */
+    val bind_text = make[(Int, MemorySegment, Int, MemorySegment, Int, MemorySegment)]("sqlite3_bind_text")
+
     /* const char *sqlite3_errstr(int); */
     val errstr = make[(MemorySegment, Int)]("sqlite3_errstr")
 
@@ -92,6 +121,28 @@ object SqliteLib:
 
     /* int sqlite3_error_offset(sqlite3 *db); */
     //val error_offset = make[(Int, MemorySegment)]("sqlite3_error_offset")
+
+    /* int sqlite3_column_count(sqlite3_stmt *pStmt); */
+    val column_count = make[(Int, MemorySegment)]("sqlite3_column_count")
+
+    /* int sqlite3_column_bytes(sqlite3_stmt*, int iCol) */
+    val column_bytes = make[(Int, MemorySegment, Int)]("sqlite3_column_bytes")
+
+    /* double sqlite3_column_double(sqlite3_stmt*, int iCol); */
+    val column_double = make[(Double, MemorySegment, Int)]("sqlite3_column_double")
+
+    /* int sqlite3_column_int(sqlite3_stmt*, int iCol); */
+    val column_int = make[(Int, MemorySegment, Int)]("sqlite3_column_int")
+
+    /* sqlite3_int64 sqlite3_column_int64(sqlite3_stmt*, int iCol); */
+    val column_int64 = make[(Long, MemorySegment, Int)]("sqlite3_column_int64")
+
+    /* const unsigned char *sqlite3_column_text(sqlite3_stmt*, int iCol); */
+    val column_text = make[(MemorySegment, MemorySegment, Int)]("sqlite3_column_text")
+
+    /* int sqlite3_column_type(sqlite3_stmt*, int iCol); */
+    val column_type = make[(Int, MemorySegment, Int)]("sqlite3_column_type")
+
 
     def extractString(segment: MemorySegment, maxLength: Int, defStr: => String): String = 
         if (segment == MemorySegment.NULL) then defStr
@@ -110,4 +161,10 @@ object SqliteLib:
                 val msg = SqliteLib.errstr.invokeExact(res): MemorySegment
                 val msgStr = extractString(msg, 512, "Unknown error")
                 throw new SqliteException(s"Error ($res): $msgStr")
+    
+    val datetimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS").nn.withZone(ZoneId.systemDefault()).nn
+
+    val SQLITE_STATIC = MemorySegment.ofAddress(0L)
+    val SQLITE_TRANSIENT = MemorySegment.ofAddress(-1L)
+
 

@@ -6,9 +6,10 @@ import java.lang.foreign.SymbolLookup
 import java.lang.foreign.FunctionDescriptor
 import java.lang.foreign.ValueLayout
 import java.lang.foreign.MemoryLayout
-import scala.compiletime.erasedValue
 import java.lang.foreign.MemorySegment
 import java.lang.invoke.MethodHandle
+
+import scala.compiletime.erasedValue
 
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

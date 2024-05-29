@@ -51,7 +51,7 @@ class SqliteStmt(private val stmt: MemorySegment, private val db: MemorySegment)
     def readString(pos: Int): String = 
         val size = column_bytes.invokeExact(stmt, pos): Int
         val ptr = column_text.invokeExact(stmt, pos): MemorySegment
-        extractString(ptr, size, "")
+        extractString(ptr, size + 1, "")
     
     def close(): Unit = 
         val res = finalizeStmt.invokeExact(stmt): Int

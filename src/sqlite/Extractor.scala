@@ -18,6 +18,10 @@ object Extractor:
         def extract(stmt: SqliteStmt, pos: Int): Int = stmt.readInt(pos)
         def columnType = "INTEGER"
 
+    given boolExtractor: Extractor[Boolean] with
+        def extract(stmt: SqliteStmt, pos: Int): Boolean = stmt.readInt(pos) > 0
+        def columnType = "TINYINT"
+
     given longExtractor: Extractor[Long] with
         def extract(stmt: SqliteStmt, pos: Int): Long = stmt.readLong(pos)
         def columnType = "BIGINT"

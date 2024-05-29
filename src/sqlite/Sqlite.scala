@@ -8,7 +8,7 @@ import SqliteLib.*
 import scala.util.Using.resource
 
 class Sqlite(private val db: MemorySegment) extends AutoCloseable:
-
+    private var inTransaction = false
     
     def prepare(sql: String): SqliteStmt = 
             val arena = Arena.ofConfined().nn
@@ -26,8 +26,26 @@ class Sqlite(private val db: MemorySegment) extends AutoCloseable:
     def close(): Unit = 
         val res = close_v2.invokeExact(db): Int
         checkResult(res, MemorySegment.NULL.nn)
+    
+    def exec(sql: String): Unit = 
+        resource(prepare(sql)) { stmt =>
+            if stmt.step() then throw new SqliteException("Expected no results")
+        }
 
-class SqliteException(msg: String) extends Exception(msg)
+    def startTransaction(): Unit = 
+        if inTransaction then throw new SqliteException("Transaction already started")
+        exec("BEGIN TRANSACTION")
+        inTransaction = true
+
+    def commitTransaction(): Unit = 
+        if !inTransaction then throw new SqliteException("No transaction to commit")
+        exec("COMMIT")
+        inTransaction = false
+
+    def rollbackTransaction(): Unit = 
+        if !inTransaction then throw new SqliteException("No transaction to rollback")
+        exec("ROLLBACK")
+        inTransaction = false
 
 object Sqlite:
     def open(path: String, opts: SqliteOpen*): Sqlite =

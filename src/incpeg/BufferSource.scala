@@ -6,9 +6,14 @@ class BufferTraversal(private val buffer: LineBuffer, private var row: Int, var 
 
     type Mark = BufferMark
 
-    private var _lookback: Int = -1
+    private var _lookback: Int = Traversal.EOF
+    private var _current: Int = Traversal.EOF
+    private var _lookahead: Int = Traversal.EOF
+
     assert(row < buffer.count && col <= buffer.line(row).length())
-    
+    _current = get(row, col)
+    _lookahead = getLookahead()
+
     def createMark(): Mark = BufferMark(-1, -1, -1)
 
     def mark(mark: Mark): Unit = 
@@ -27,19 +32,24 @@ class BufferTraversal(private val buffer: LineBuffer, private var row: Int, var 
             if r == buffer.count - 1 then Traversal.EOF else '\n'
         else line.charAt(c)
 
-    def current: Int = get(row, col)
-    
-    def lookahead: Int = 
-        if col < buffer.line(row).length then get(row, col + 1)
+    protected def getLookahead(): Int = 
+        if col < buffer.line(row).length() then get(row, col + 1)
         else 
             if row < buffer.count - 1 then get(row + 1, 0) else Traversal.EOF
 
+    def current: Int = _current
+    
+    def lookahead: Int = _lookahead
+
     def consume(): Unit = 
+        if _current == Traversal.EOF then throw new IllegalStateException("Cannot consume EOF")
         _lookback = current
+        _current = lookahead
         if col < buffer.line(row).length() then col += 1
         else
             col = 0
             if row < buffer.count - 1 then row += 1
+        _lookahead = getLookahead()
             
 
 

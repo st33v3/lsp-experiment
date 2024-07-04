@@ -6,6 +6,7 @@ import incpeg.LineBuffer
 import incpeg.BufferSource
 import incpeg.RowCol
 import incpeg.Traversal
+import org.openjdk.jmh.annotations.Fork
 
 val str = "Wiki je skutečné hypertextové medium s nelineárními navigačními strukturami. Každá stránka obvykle obsahuje mnoho odkazů na jiné stránky. Ve větších wiki často existují hierarchické navigační stránky, ale nemusejí se používat. Odkazy jsou vytvářeny užitím specifické syntaxe, takzvaných link pattern (formát odkazu).\n" +
   "Původně používala většina wiki systémů jako link pattern metodu CamelCase, která vytváří odkazy tak, že výraz se napíše s velkými počátečními písmeny jednotlivých slov a vynechají se mezery mezi nimi. Slovo CamelCase je samo o sobě příkladem CamelCase. I když CamelCase vytváří odkazy velmi snadno, vede také k vytváření odkazů ve tvaru odlišném od standardního pravopisu. Wiki založené na CamelCase jsou rychle rozeznatelné podle velkého množství odkazů se jmény jako TableOfContents (TabulkaObsahu) a BeginnerQuestions (OtázkyZačátečníků).\n" +
@@ -39,18 +40,19 @@ class IntSequencer extends Sequencer:
     index += 1
     c
 
+@Fork(1)
 class BenchTraversal:
 
-  @Benchmark
-  def simpleString(b: Blackhole): Unit =
-    for (j <- 0 until str.length()) do
-      b.consume(str.charAt(j))
+  // @Benchmark
+  // def simpleString(b: Blackhole): Unit =
+  //   for (j <- 0 until str.length()) do
+  //     b.consume(str.charAt(j))
 
-  @Benchmark
-  def lineBuffer(b: Blackhole): Unit = 
-    for (j <- 0 until lb.count) do
-      for (k <- 0 until lb.line(j).length()) do
-        b.consume(lb.line(j).charAt(k))
+  // @Benchmark
+  // def lineBuffer(b: Blackhole): Unit = 
+  //   for (j <- 0 until lb.count) do
+  //     for (k <- 0 until lb.line(j).length()) do
+  //       b.consume(lb.line(j).charAt(k))
 
   @Benchmark
   def lineBufferTraversal(b: Blackhole): Unit = 
@@ -59,14 +61,14 @@ class BenchTraversal:
       b.consume(tr.current)
       tr.consume()
 
-  @Benchmark
-  def longSequencer(b: Blackhole): Unit = 
-    val seq: Sequencer = new LongSequencer
-    while !seq.eof(str) do
-      b.consume(seq.next(str))
+  // @Benchmark
+  // def longSequencer(b: Blackhole): Unit = 
+  //   val seq: Sequencer = new LongSequencer
+  //   while !seq.eof(str) do
+  //     b.consume(seq.next(str))
 
-  @Benchmark
-  def intSequencer(b: Blackhole): Unit = 
-    val seq: Sequencer = new IntSequencer
-    while !seq.eof(str) do
-      b.consume(seq.next(str))
+  // @Benchmark
+  // def intSequencer(b: Blackhole): Unit = 
+  //   val seq: Sequencer = new IntSequencer
+  //   while !seq.eof(str) do
+  //     b.consume(seq.next(str))

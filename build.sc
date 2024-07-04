@@ -2,7 +2,7 @@ import mill._, scalalib._
 import $ivy.`com.lihaoyi::mill-contrib-jmh:`
 import contrib.jmh.JmhModule
 
-object foo extends RootModule with ScalaModule {
+object root extends RootModule with ScalaModule {
   def scalaVersion = "3.4.1"
   def scalacOptions = Seq("-Yexplicit-nulls", "-Ysafe-init", "-deprecation")
   def ivyDeps = Agg(
@@ -15,8 +15,8 @@ object foo extends RootModule with ScalaModule {
 
   object bench extends ScalaModule with JmhModule {
   def jmhCoreVersion = "1.35"
-  def scalaVersion = "3.4.1"
-  override def moduleDeps = Seq(foo)
+  def scalaVersion = root.scalaVersion
+  override def moduleDeps = Seq(root)
 } 
 
 }

@@ -2,7 +2,6 @@ package bench
 
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.infra.Blackhole
-import javax.sound.sampled.Line
 import incpeg.LineBuffer
 import incpeg.BufferSource
 import incpeg.RowCol
@@ -19,6 +18,26 @@ val str = "Wiki je skutečné hypertextové medium s nelineárními navigačním
 
 val lb = LineBuffer.fromString(str)
 val bs = BufferSource(lb)
+
+trait Sequencer:
+  def eof(cs: CharSequence): Boolean
+  def next(cs: CharSequence): Char
+
+class LongSequencer extends Sequencer:
+  private var index = 0L
+  def eof(cs: CharSequence): Boolean = index >= cs.length
+  def next(cs: CharSequence): Char = 
+    val c = cs.charAt(index.toInt)
+    index += 1
+    c
+
+class IntSequencer extends Sequencer:
+  private var index = 0
+  def eof(cs: CharSequence): Boolean = index >= cs.length
+  def next(cs: CharSequence): Char = 
+    val c = cs.charAt(index)
+    index += 1
+    c
 
 class BenchTraversal:
 
@@ -39,3 +58,15 @@ class BenchTraversal:
     while (tr.current != Traversal.EOF) do
       b.consume(tr.current)
       tr.consume()
+
+  @Benchmark
+  def longSequencer(b: Blackhole): Unit = 
+    val seq: Sequencer = new LongSequencer
+    while !seq.eof(str) do
+      b.consume(seq.next(str))
+
+  @Benchmark
+  def intSequencer(b: Blackhole): Unit = 
+    val seq: Sequencer = new IntSequencer
+    while !seq.eof(str) do
+      b.consume(seq.next(str))

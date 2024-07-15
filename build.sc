@@ -3,8 +3,8 @@ import $ivy.`com.lihaoyi::mill-contrib-jmh:`
 import contrib.jmh.JmhModule
 
 object root extends RootModule with ScalaModule {
-  def scalaVersion = "3.4.1"
-  def scalacOptions = Seq("-Yexplicit-nulls", "-Ysafe-init", "-deprecation")
+  def scalaVersion = "3.4.2"
+  def scalacOptions = Seq("-Yexplicit-nulls", "-deprecation")
   def ivyDeps = Agg(
     ivy"dev.zio::zio-json:0.6.2",
   )

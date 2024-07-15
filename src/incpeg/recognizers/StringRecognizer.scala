@@ -11,7 +11,7 @@ class ConstRecognizer(val value: String) extends Recognizer {
 
   def recognize(input: Input): String | Null = {
     var pos = 0
-    while pos < value.length() && input.lookahead == value.charAt(pos) do
+    while pos < value.length() && input.current == value.charAt(pos) do
       input.consume()
       pos += 1
     if (pos == value.length()) then value

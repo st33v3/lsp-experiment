@@ -2,17 +2,22 @@ package incpeg
 
 case class BufferMark(var row: Int, var col: Int, var lb: Int)
 
-class BufferTraversal(private val buffer: LineBuffer, private var row: Int, var col: Int) extends Traversal:
+class BufferTraversal(private val buffer: LineBuffer, private var row: Int, private var col: Int) extends Traversal:
 
     type Mark = BufferMark
 
     private var _lookback: Int = Traversal.EOF
     private var _current: Int = Traversal.EOF
     private var _lookahead: Int = Traversal.EOF
+    private var laRow: Int = row
+    private var laCol: Int = col
+    private var line: String = ""
 
     assert(row < buffer.count && col <= buffer.line(row).length())
-    _current = get(row, col)
-    _lookahead = getLookahead()
+    line = buffer.line(row)
+    _current = get()
+    next()
+    _lookahead = get()
 
     def createMark(): Mark = BufferMark(-1, -1, -1)
 
@@ -24,18 +29,28 @@ class BufferTraversal(private val buffer: LineBuffer, private var row: Int, var 
     def reset(mark: Mark): Unit = 
         col = mark.col
         row = mark.row
+        laCol = col
+        laRow = row
+        line = buffer.line(row)
         _lookback = mark.lb
+        _current = get()
+        next()
+        _lookahead = get()
 
-    protected def get(r: Int, c: Int): Int = 
-        val line = buffer.line(r)
-        if c == line.length() then 
-            if r == buffer.count - 1 then Traversal.EOF else '\n'
-        else line.charAt(c)
+    private inline def next(): Unit =
+        laRow = row
+        laCol = col + 1
+        if laCol > line.length() then
+            if (laRow < buffer.count - 1) then
+                laRow += 1
+                laCol = 0
+                line = buffer.line(laRow)
 
-    protected def getLookahead(): Int = 
-        if col < buffer.line(row).length() then get(row, col + 1)
-        else 
-            if row < buffer.count - 1 then get(row + 1, 0) else Traversal.EOF
+    private inline def get(): Int = 
+        val ll = line.length()
+        if laCol < ll then line.charAt(laCol)
+        else if laCol == ll then '\n'
+        else Traversal.EOF
 
     def current: Int = _current
     
@@ -45,14 +60,11 @@ class BufferTraversal(private val buffer: LineBuffer, private var row: Int, var 
         if _current == Traversal.EOF then throw new IllegalStateException("Cannot consume EOF")
         _lookback = current
         _current = lookahead
-        if col < buffer.line(row).length() then col += 1
-        else
-            col = 0
-            if row < buffer.count - 1 then row += 1
-        _lookahead = getLookahead()
+        row = laRow
+        col = laCol
+        next()
+        _lookahead = get()
             
-
-
     def pos = RowCol(row, col)
     def lookback: Int = _lookback
 

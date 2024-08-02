@@ -18,20 +18,21 @@ object RowCol:
   // given Ordering[RowCol] with
   //    def compare(x: RowCol, y: RowCol): Int = java.lang.Long.compare(x.nn, y.nn)
 
-extension (pos: RowCol)
-    def row: Int = (pos >> 32).toInt
-    def col: Int = pos.toInt & 0x7FFFFFFF
-    def isZero: Boolean = pos == 0
-    def +(n: RowCol): RowCol = 
-      if n.row == 0 then RowCol(pos.row, n.col + pos.col)
-      else RowCol(pos.row + n.row, n.col)
-    def -(n: RowCol): RowCol =
-      if pos.row == n.row then RowCol(pos.row, pos.col - n.col)
-      else RowCol(pos.row - n.row, pos.col)
-    def <(other: RowCol): Boolean = pos < other
-    def <=(other: RowCol): Boolean = pos <= other
-    def >(other: RowCol): Boolean = pos > other
-    def >=(other: RowCol): Boolean = pos >= other
+  extension (pos: RowCol)
+      def row: Int = (pos >> 32).toInt
+      def col: Int = pos.toInt & 0x7FFFFFFF
+      def isZero: Boolean = pos == 0
+      def +(n: RowCol): RowCol = 
+        if n.row == 0 then RowCol(pos.row, n.col + pos.col)
+        else RowCol(pos.row + n.row, n.col)
+      def -(n: RowCol): RowCol =
+        if pos.row == n.row then RowCol(pos.row, pos.col - n.col)
+        else RowCol(pos.row - n.row, pos.col)
+      def <(other: RowCol): Boolean = pos < other
+      def <=(other: RowCol): Boolean = pos <= other
+      def >(other: RowCol): Boolean = pos > other
+      def >=(other: RowCol): Boolean = pos >= other
+      def show: String = s"RowCol($row, $col)"
 
 
 

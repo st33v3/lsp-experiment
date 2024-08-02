@@ -1,6 +1,8 @@
 package incpeg
 
 import utest._
+import utest.asserts.Asserts
+import scala.util.chaining.scalaUtilChainingOps
 
 object BufferSourceTest extends TestSuite:
 
@@ -25,7 +27,7 @@ object BufferSourceTest extends TestSuite:
         val src = BufferSource( LineBuffer.fromString("line1\nline2"))
         assert(src.length == RowCol(1, 5))
         val tr = src.createTraversal(RowCol(0, 0))
-        assert(extract(tr) == "line1\nline2")
+        assert(extract(tr).tap(s => println(s"-----$s-------")) == "line1\nline2")
 
     test("traverse part source"):
         val src = BufferSource( LineBuffer.fromString("line1\nline2"))

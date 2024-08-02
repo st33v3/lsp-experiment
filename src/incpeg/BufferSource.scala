@@ -39,17 +39,18 @@ class BufferTraversal(private val buffer: LineBuffer, private var row: Int, priv
 
     private inline def next(): Unit =
         laRow = row
-        laCol = col + 1
-        if laCol > line.length() then
-            if (laRow < buffer.count - 1) then
-                laRow += 1
-                laCol = 0
-                line = buffer.line(laRow)
+        laCol = col
+        val ll = line.length()
+        if laCol < ll then laCol += 1
+        else if laRow < buffer.count - 1 then
+            laRow += 1
+            laCol = 0
+            line = buffer.line(laRow)
 
     private inline def get(): Int = 
         val ll = line.length()
         if laCol < ll then line.charAt(laCol)
-        else if laCol == ll then '\n'
+        else if laRow < buffer.count - 1 then '\n'
         else Traversal.EOF
 
     def current: Int = _current

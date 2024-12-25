@@ -11,8 +11,8 @@ object RowCol:
     assert(col >= 0)
     row.toLong << 32 | col.toLong
 
-  def zero: RowCol = 0L
-  def invalid: RowCol = -1L
+  val zero: RowCol = 0L
+  val invalid: RowCol = -1L
 
   // Following code does not work in combination with explicit null
   // given Ordering[RowCol] with

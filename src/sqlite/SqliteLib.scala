@@ -149,7 +149,7 @@ object SqliteLib:
         if (segment == MemorySegment.NULL) then defStr
         else 
             val seg = segment.reinterpret(maxLength).nn
-            seg.getUtf8String(0).nn
+            seg.getString(0).nn
 
     def checkResult(res: Int, db: MemorySegment): Unit = 
         res match

@@ -74,9 +74,17 @@ class LineBuffer(
 
     def charAt(pos: RowCol): Char = 
         val str = line(pos.row)
-        assert(pos.col < str.length)
-        str.charAt(pos.col)
+        assert(pos.col <= str.length)
+        if pos.col == str.length then '\n' else str.charAt(pos.col)
     
+    def nextPos(pos: RowCol): RowCol = 
+        val ll = line(pos.row).length
+        if pos.col < ll then
+            if pos.col == ll - 1 && pos.row >= count - 1 then RowCol.invalid
+            else RowCol(pos.row, pos.col + 1)
+        else if pos.row < count - 1 then RowCol(pos.row + 1, 0)
+        else RowCol.invalid
+        
     def length: RowCol = RowCol(count - 1, lines(count - 1).length)
 
 object LineBuffer:

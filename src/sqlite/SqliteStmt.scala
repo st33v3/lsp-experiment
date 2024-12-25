@@ -35,7 +35,7 @@ class SqliteStmt(private val stmt: MemorySegment, private val db: MemorySegment)
 
     def bindString(pos: Int, value: String): Unit = 
         resource(Arena.ofConfined().nn): arena =>
-            val str = arena.allocateUtf8String(value).nn
+            val str = arena.allocateFrom(value).nn
             val res = bind_text.invokeExact(stmt, pos, str, str.byteSize().toInt, SQLITE_TRANSIENT): Int
             checkResult(res, db)
 

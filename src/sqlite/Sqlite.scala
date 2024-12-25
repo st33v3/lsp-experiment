@@ -14,7 +14,7 @@ class Sqlite(private val db: MemorySegment) extends AutoCloseable:
             val arena = Arena.ofConfined().nn
             try
                 val ptr = arena.allocate(ValueLayout.ADDRESS).nn
-                val query = arena.allocateUtf8String(sql).nn
+                val query = arena.allocateFrom(sql).nn
                 val res = prepare_v2.invokeExact(db, query, query.byteSize().toInt, ptr, MemorySegment.NULL): Int
                 checkResult(res, db)
                 val stmtPointer = ptr.get(ValueLayout.ADDRESS, 0).nn
@@ -51,7 +51,7 @@ object Sqlite:
     def open(path: String, opts: SqliteOpen*): Sqlite =
         resource(Arena.ofConfined().nn): arena =>
             val ptr = arena.allocate(ValueLayout.ADDRESS).nn
-            val file = arena.allocateUtf8String(path).nn
+            val file = arena.allocateFrom(path).nn
             val o = opts.foldLeft(0)(_ | _.toInt)
             var res = open_v2.invokeExact(file, ptr, o, MemorySegment.NULL): Int
             val pointer = ptr.get(ValueLayout.ADDRESS, 0).nn

@@ -1,6 +1,5 @@
 package bench
 
-
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.infra.Blackhole
 import incpeg.LineBuffer
@@ -95,11 +94,15 @@ object BenchParser:
 
   @main
   def testParsing(): Unit =
-    val in = BenchParser.bs.createTraversal(RowCol(0, 0))
-    val mp = MyParser(in)
-    println(mp.parse())
-    val st = BufferSource(LineBuffer.fromString(Texts.shortExpression)).createTraversal(RowCol(0, 0))
-    println(MyParser(st).parse())
+    // val in = BenchParser.bs.createTraversal(RowCol(0, 0))
+    // val mp = MyParser(in)
+    // println(mp.parse())
+    // val st = BufferSource(LineBuffer.fromString(Texts.shortExpression)).createTraversal(RowCol(0, 0))
+    // println(MyParser(st).parse())
+    val bs = BufferSource(LineBuffer.fromString(Texts.expression))
+    var pos = RowCol(0, 0)
+    val op = OriginalPegParser(bs)
+    println(op.parseExpr())
 
 @Fork(1)
 class BenchParser:
@@ -115,5 +118,10 @@ class BenchParser:
   def handmadeParserDirect(b: Blackhole): Unit =
     val seq = IntSequencer(Texts.expression)
     val res = BenchParser.parseExprDirect(seq, false)
+    b.consume(res)
+
+  @Benchmark
+  def originalPegParser(b: Blackhole): Unit =
+    val res = OriginalPegParser(BenchParser.bs).parseExpr()
     b.consume(res)
 

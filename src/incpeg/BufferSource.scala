@@ -70,8 +70,11 @@ class BufferTraversal(private val buffer: LineBuffer, private var row: Int, priv
     def lookback: Int = _lookback
 
 class BufferSource(private val buffer: LineBuffer) extends Source:
-    def length: RowCol = buffer.length
-    def charAt(pos: RowCol): Char = buffer.charAt(pos)
-    def createTraversal(pos: RowCol): Traversal = new BufferTraversal(buffer, pos.row, pos.col)
-    def extract(pos: RowCol, count: RowCol, sink: Appendable): Int = buffer.extract(pos, count, sink)
-    def lineLength(row: Int): Int = buffer.line(row).length
+
+    override def nextPos(pos: RowCol): RowCol = buffer.nextPos(pos)
+    override def length: RowCol = buffer.length
+    override def charAt(pos: RowCol): Char = buffer.charAt(pos)
+    override def createTraversal(pos: RowCol): Traversal = new BufferTraversal(buffer, pos.row, pos.col)
+    override def extract(pos: RowCol, count: RowCol, sink: Appendable): Int = buffer.extract(pos, count, sink)
+    override def lineLength(row: Int): Int = buffer.line(row).length
+    

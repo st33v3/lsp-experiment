@@ -9,6 +9,9 @@ trait Reader[+T]:
 
 object Reader:
 
+    class DerivedReader[T <: Tuple](extractors: Tuple.Map[T, Extractor]) extends Reader[T]:
+        def read(stmt: SqliteStmt, base: Int): T = readElems(stmt, extractors, base)
+    
     given emptyTupleReader[T <: EmptyTuple]: Reader[EmptyTuple] with
         def read(stmt: SqliteStmt, base: Int): EmptyTuple = EmptyTuple
 
@@ -28,7 +31,7 @@ object Reader:
             case _: (t *: ts) => 
                 summonInline[Extractor[t]] *: deriveElem[ts]
 
-    private def readElems[T <: Tuple](stmt: SqliteStmt, extractors: T, idx: Int): Tuple = 
+    private def readElems(stmt: SqliteStmt, extractors: Tuple, idx: Int): Tuple = 
         extractors: @unchecked match
             case EmptyTuple => EmptyTuple
             case ((h : Extractor[?]) *: t) => 

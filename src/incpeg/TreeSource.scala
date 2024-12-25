@@ -46,7 +46,9 @@ class TreeSource extends Source:
 
     def extract(pos: RowCol, count: RowCol, sink: Appendable): Int = if root == null then 0 else strictRoot.extract(pos, count, sink)
     
-    def lineLength(line: Int): Int = ???
+    override def lineLength(line: Int): Int = ???
+
+    override def nextPos(pos: RowCol): RowCol = ???
 
 
 class Edit(var pos: RowCol, var delete: RowCol, var buffer: LineBuffer):
@@ -117,7 +119,6 @@ class LineTreeLeaf extends LineTreeNode:
     override def isUnderflow: Boolean = ???
 
     override def extract(pos: RowCol, count: RowCol, sink: Appendable): Int = ???
-
 
     protected def delete(pos: RowCol, delete: RowCol): Unit =
         // if delete.isZero then RowCol(0, 0)
